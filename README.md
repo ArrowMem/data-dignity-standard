@@ -1,5 +1,7 @@
 # The Data Dignity Standard™
 
+*[Version française](README.fr.md)*
+
 **v0.1 - Draft for public comment**
 
 ## Why this exists
