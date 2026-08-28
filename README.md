@@ -87,9 +87,8 @@ checker is planned to follow shortly after the standard itself.
 
 **Feedback and questions:** open an issue on this repository, or email git@arrowmem.ca
 
-**License:** [TBD before publish - CC-BY intended for this document; a permissive open-source
-license intended for any reference code. This is also where a line reserving "Data Dignity
-Standard" as a trademark, separate from the CC-BY-licensed text, belongs once that decision is
-final.]
+**License:** this document is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- see LICENSE. "Data Dignity Standard" as a name is a separate matter from this license and is
+not resolved by it.
 
 The ArrowMem team
