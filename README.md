@@ -1,4 +1,4 @@
-# The Data Dignity Standard
+# The Data Dignity Standard™
 
 **v0.1 - Draft for public comment**
 
@@ -88,7 +88,7 @@ checker is planned to follow shortly after the standard itself.
 **Feedback and questions:** open an issue on this repository, or email git@arrowmem.ca
 
 **License:** this document is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
-- see LICENSE. "Data Dignity Standard" as a name is a separate matter from this license and is
-not resolved by it.
+- see LICENSE. "Data Dignity Standard" is a trademark of ArrowMem (application pending); the
+trademark is a separate matter from this license and is not granted by it.
 
 The ArrowMem team
