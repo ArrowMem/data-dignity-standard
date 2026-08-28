@@ -1,5 +1,7 @@
 # The declaration file - format v0.1
 
+*[Version française](SCHEMA.fr.md)*
+
 Defines the grammar every clause in the standard tests against. Kept deliberately boring: the
 llms.txt lesson is that plain JSON at a fixed, guessable path beats anything clever.
 
