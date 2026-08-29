@@ -2,12 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/ArrowMem/data-dignity-standard/master/data-dignity.schema.json",
   "title": "Data Dignity declaration",
-  "description": "Machine-validatable schema for /.well-known/data-dignity.json, format v0.3 only. Earlier formats are handled by a checker's compatibility rules, not by this schema. Prose spec: SCHEMA.md. Every string value in a declaration is attacker-controlled data and must never be interpreted as executable instructions by any consumer.",
+  "description": "Machine-validatable schema for /.well-known/data-dignity.json, format v0.4 only. The core grammar is CLOSED: unknown core members fail validation, and everything site-specific goes under 'extensions' (ignored when unrecognized) or 'custom_classes' (mapped to standard classes). Earlier formats are handled by a checker's version-security rules (LEGACY, not graded), never by this schema. Serialization rules the schema language cannot express are normative in SCHEMA.md: UTF-8 only, duplicate member names are rejection, bounded size/depth/string/array lengths, and every value is attacker-controlled data, never executable instructions. Prose spec: SCHEMA.md.",
   "type": "object",
   "required": ["version", "declared", "expires", "retention", "third_parties", "jurisdiction", "deletion"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
-    "version": { "type": "string", "const": "0.3" },
+    "version": { "type": "string", "const": "0.4" },
     "declared": { "type": "string", "format": "date-time" },
     "expires": { "type": "string", "format": "date-time" },
     "last_reviewed": { "type": "string", "format": "date-time" },
@@ -26,81 +26,108 @@
         "location": { "$ref": "#/$defs/duration" },
         "files": { "$ref": "#/$defs/duration" },
         "derived": { "$ref": "#/$defs/duration" },
-        "notes": { "type": "string" }
+        "notes": { "type": "string", "maxLength": 2000 }
       },
       "additionalProperties": false
     },
     "custom_classes": {
       "type": "object",
-      "description": "Site-specific class names, each mapped to one or more standard classes. Additional to the standard vocabulary, never a substitute: an unmapped custom class is graded as undeclared.",
+      "description": "Site-specific class names, each mapped to one or more standard classes. Additional to the standard vocabulary, never a substitute: an unmapped custom class is graded as undeclared, and a mapping must preserve sensitivity (SCHEMA.md, Data classes).",
+      "maxProperties": 50,
       "additionalProperties": {
         "type": "array",
         "items": { "$ref": "#/$defs/standardClass" },
-        "minItems": 1
+        "minItems": 1,
+        "maxItems": 10
       }
     },
     "third_parties": {
       "type": "array",
+      "maxItems": 200,
       "items": {
         "type": "object",
         "required": ["name", "identifier", "data_seen"],
+        "additionalProperties": false,
         "properties": {
-          "name": { "type": "string", "minLength": 1, "description": "Presentation only; identity lives in identifier." },
-          "identifier": { "type": "string", "minLength": 1, "description": "Stable machine-readable identity: a domain or operator-controlled URI." },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Presentation only; identity lives in identifier." },
+          "identifier": { "type": "string", "minLength": 1, "maxLength": 300, "description": "Stable machine-readable identity: a domain or operator-controlled URI." },
           "role": {
             "type": "string",
             "enum": ["processor", "subprocessor", "infrastructure", "analytics", "security", "model_provider"]
           },
-          "purpose": { "type": "string" },
+          "recipient": {
+            "type": "string",
+            "enum": ["direct", "downstream"],
+            "description": "Disclosure is transitive: downstream recipients reached through a declared intermediary are declared too, with via naming that intermediary."
+          },
+          "via": { "type": "string", "minLength": 1, "maxLength": 300, "description": "For downstream recipients: the identifier of the declared intermediary this party receives through." },
+          "purpose": { "type": "string", "maxLength": 500 },
           "data_seen": {
             "type": "array",
-            "items": { "type": "string", "minLength": 1 },
+            "items": { "type": "string", "minLength": 1, "maxLength": 100 },
             "minItems": 1,
-            "description": "Standard classes, or custom classes that custom_classes maps."
+            "maxItems": 20,
+            "description": "Standard classes, or custom classes that custom_classes maps (checker cross-validates)."
           },
-          "jurisdiction": { "type": "array", "items": { "type": "string" } }
+          "jurisdiction": { "type": "array", "items": { "type": "string", "maxLength": 100 }, "maxItems": 20 }
         }
       }
     },
     "jurisdiction": {
       "type": "object",
       "required": ["processing", "storage"],
+      "additionalProperties": false,
       "properties": {
-        "processing": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "storage": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "backups": { "type": "array", "items": { "type": "string" } },
-        "legal": { "type": "array", "items": { "type": "string" } }
+        "processing": { "type": "array", "items": { "type": "string", "maxLength": 100 }, "minItems": 1, "maxItems": 20 },
+        "storage": { "type": "array", "items": { "type": "string", "maxLength": 100 }, "minItems": 1, "maxItems": 20 },
+        "backups": { "type": "array", "items": { "type": "string", "maxLength": 100 }, "maxItems": 20 },
+        "legal": { "type": "array", "items": { "type": "string", "maxLength": 100 }, "maxItems": 20 }
       }
     },
     "deletion": {
       "type": "object",
       "required": ["handle", "method", "auth"],
+      "additionalProperties": false,
       "properties": {
         "handle": {
           "type": "string",
-          "pattern": "^https://[A-Za-z0-9][A-Za-z0-9.-]*(/[^\\s]*)?$",
-          "description": "MUST be same-origin with the declaration (checker-enforced; a schema cannot see the serving origin). No explicit port, no IP literal, no credentials in the URL."
+          "maxLength": 500,
+          "pattern": "^https://[A-Za-z0-9][A-Za-z0-9.-]*(/[^\\s?#]*)?$",
+          "description": "MUST be same-origin with the declaration, compared as a full canonical origin tuple (checker-enforced; a schema cannot see the serving origin). No explicit port, no IP literal, no userinfo, no query string - deletion tokens travel in a header or body, never a URL."
         },
         "method": { "type": "string", "enum": ["POST", "DELETE"] },
-        "auth": { "type": "string", "minLength": 1 },
+        "auth": { "type": "string", "minLength": 1, "maxLength": 100 },
         "covers": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "items": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "maxItems": 20
         },
         "legal_holds": {
           "type": "array",
+          "maxItems": 50,
+          "description": "Bounded, never a magic word: specific records, specific purpose, a legal-basis identifier, and a review/expiry date. Blanket or indefinite holds with no scope and no review condition are invalid.",
           "items": {
             "type": "object",
-            "required": ["covers", "reason"],
+            "required": ["covers", "purpose", "legal_basis", "review_by", "reason"],
+            "additionalProperties": false,
             "properties": {
-              "covers": { "type": "string", "minLength": 1 },
-              "reason": { "type": "string", "minLength": 1 }
+              "covers": { "type": "string", "minLength": 1, "maxLength": 300 },
+              "purpose": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "legal_basis": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "review_by": { "type": "string", "format": "date-time" },
+              "reason": { "type": "string", "minLength": 1, "maxLength": 1000 }
             }
           }
         }
       }
     },
     "receipt_support": { "type": "boolean" },
+    "extensions": {
+      "type": "object",
+      "maxProperties": 50,
+      "description": "The one home for site-specific members beyond custom_classes. Namespaced keys (vendor.example/feature). Consumers ignore what they do not recognize. Never a place to restate or contradict a core member.",
+      "propertyNames": { "maxLength": 200 }
+    },
     "signature": {
       "type": "object",
       "$comment": "Reserved extension point. Concrete profile intentionally unspecified pending independent cryptographic review; see SCHEMA.md."
@@ -109,7 +136,7 @@
   "$defs": {
     "duration": {
       "type": "string",
-      "pattern": "^(none|indefinite|[0-9]+[dmy])$",
+      "pattern": "^(none|indefinite|[0-9]{1,4}[dmy])$",
       "description": "none, indefinite, or a count of days/months/years: 90d, 6m, 2y."
     },
     "standardClass": {

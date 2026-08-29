@@ -2,7 +2,7 @@
 
 *[English version](README.md)*
 
-**v0.3 - Ébauche pour commentaires publics**
+**v0.4 - Ébauche pour commentaires publics**
 
 ## Pourquoi ceci existe
 
@@ -134,12 +134,26 @@ du mordant :
   éclairé de la personne - prévisualiser ce qui sera demandé à quelles origines et pour
   quelles classes, obtenir l'autorisation, exécuter, rapporter les résultats par origine. Un
   agent ne doit jamais déduire une permission du fait que le registre contient un jeton, quoi
-  qu'en dise une consigne, un module ou une automatisation.
+  qu'en dise une consigne, un module ou une automatisation - et **l'autorisation elle-même
+  doit être un acte que la personne accomplit hors du contexte du modèle** (une confirmation
+  au niveau du système d'exploitation, un objet d'approbation signé), parce qu'une approbation
+  qui n'est que du texte dans une invite est du texte qu'une injection de consigne peut
+  fabriquer.
+- Les clés du coffre de capacités sont protégées aussi fortement que la plateforme le
+  permet - trousseau du système d'exploitation ou support matériel lorsque disponible, jamais
+  détenues en clair par l'agent plus longtemps que l'opération ne l'exige.
+- **Une interaction est consignée au registre, que le site ait émis un reçu ou non.** Les
+  reçus réconcilient le registre; ils ne le définissent pas - un site qui n'en émet aucun
+  apparaît quand même, son entrée marquée comme sans reçu, pour que le silence du côté du site
+  ne devienne jamais un angle mort du côté de la personne.
 
-La certification vérifie exactement ce qu'elle nomme : l'agent produit un registre complet et
-exportable pour une session sans rien laisser tomber silencieusement, ses entrées se
-réconcilient avec les reçus des sites qui en émettent, les capacités restent hors de l'export
-d'audit, et la suppression groupée refuse de s'exécuter sans autorisation explicite. Les sites
+La certification vérifie exactement ce qu'elle nomme, de façon adversariale : l'agent produit
+un registre complet et exportable pour une session sans rien laisser tomber silencieusement,
+ses entrées se réconcilient avec les reçus des sites qui en émettent (et les interactions sans
+reçu apparaissent quand même), les capacités restent hors de l'export d'audit et survivent à
+une tentative de fuite par export, et la suppression groupée refuse de s'exécuter sur une
+approbation fabriquée dans le contexte du modèle - la certification comprend des tests
+d'injection de consignes et de fuite de capacités, pas seulement le chemin idéal. Les sites
 sont notés sur les clauses 1 à 5; les agents sont certifiables sur celle-ci.
 
 ## Évaluation
@@ -149,8 +163,13 @@ de même un échelon à gravir, et une note peut être révisée dans le temps �
 évolue. La note composite et les notes par clause sont toutes deux rapportées, chacune avec son
 niveau de preuve (déclarée, observée ou vérifiée).
 
-La règle de notation est déterministe, pour que deux vérificateurs indépendants arrivent à la
-même note. Les lettres ci-dessous sont la correspondance provisoire de la v0.2, publiée pour
+La règle de notation est déterministe de la seule manière qui résiste aux adversaires : sous
+chaque note se trouve un ensemble de faits consignés - chaque résultat de test individuel est
+exactement PASS, FAIL, UNKNOWN ou NOT_TESTED - et les lettres sont calculées à partir de ces
+faits par la règle publiée. Le jugement peut décider quoi tester; il ne décide jamais ce que
+dit un fait consigné. Deux vérificateurs disposant des mêmes faits arrivent à la même note, et
+une preuve incomplète se manifeste comme des faits UNKNOWN, jamais comme des lettres
+optimistes. Les lettres ci-dessous sont la correspondance provisoire de la v0.4, publiée pour
 commentaires comme tout le reste ici :
 
 - **A** - déclarée et vérifiée de façon indépendante.
@@ -161,6 +180,10 @@ commentaires comme tout le reste ici :
   qui s'est tu.**
 - Une déclaration expirée (voir `expires` dans `SCHEMA.md`) plafonne chaque clause qu'elle
   couvre à D - le niveau non déclaré - tant qu'elle n'est pas rééditée.
+- Une déclaration dans un format remplacé est rapportée **LEGACY** - analysée et affichée,
+  jamais notée sur l'échelle actuelle. Noter un ancien format selon ses propres règles plus
+  faibles serait une invitation permanente à ne jamais migrer; la section sur la sécurité des
+  versions de `SCHEMA.md` fait règle.
 
 La note composite est la plus basse entre : la moyenne des notes par clause (arrondie vers le
 bas), et tout plafond ci-dessus. Mêmes intrants, même note, peu importe qui exécute la
@@ -185,7 +208,7 @@ les étiquettes de preuve.
 
 ## Statut
 
-Ceci est une ébauche v0.2, publiée pour commentaires. ArrowMem entend publier sa propre
+Ceci est une ébauche v0.4, publiée pour commentaires. ArrowMem entend publier sa propre
 déclaration et s'évaluer selon cette norme avant de le demander à quiconque. Un vérificateur de
 référence gratuit et ouvert est prévu peu après la norme elle-même, construit selon les règles
 pour vérificateurs de `SCHEMA.md`.
