@@ -185,7 +185,11 @@ papered over: that is what the evidence labels are for.
 
 ## Status
 
-This is a v0.4 draft, published for comment. ArrowMem intends to publish its own declaration
+This is a v0.4 draft, published for comment - and frozen: the clauses, grammar and
+invariants are stable for this comment period. Feedback is triaged, never folded in on
+arrival; changes land batched in the next version, and only a demonstrated exploit, an
+implementer-reported ambiguity, or the independent cryptographic review reopens the draft
+early. ArrowMem intends to publish its own declaration
 file and score against this standard before asking anyone else to. A free, open reference
 checker is planned to follow shortly after the standard itself, built to the checker rules in
 `SCHEMA.md`.

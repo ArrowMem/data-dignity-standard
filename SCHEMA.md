@@ -102,7 +102,7 @@ This is an illustrative example, not any real organization's actual declaration:
     "handle": "https://example.com/api/agent-delete",
     "method": "POST",
     "auth": "receipt-token",
-    "covers": ["identity"],
+    "covers": ["identity", "network_metadata"],
     "legal_holds": [
       { "covers": "consent records", "purpose": "proving consent was given",
         "legal_basis": "applicable-privacy-law", "review_by": "2027-01-01T00:00:00Z",
@@ -133,16 +133,28 @@ custom class as undeclared - mechanically, not by human judgement. **The mapping
 preserve sensitivity**: a custom class whose data plainly fits `health`, `financial`,
 `location` or `authentication` MUST map to that class - mapping it only to a broader,
 blander one (`derived`, `content`) to dilute what it is, is the same evasion one level up,
-and graded the same way. "Agent-delivered data"
-means every class above that an agent's interaction causes the site to receive - including
-metadata the agent did not deliberately send.
+and graded the same way. Two more invariants close the remaining ambiguity:
+**a custom class name MUST NOT equal any standard class name** - a custom class called
+`health` mapped to `derived` would give one token two meanings, which is the exact
+parser-confusion class this format exists to kill, so the schema rejects the collision
+outright (namespaced names like `example.com/loyalty-profile` are the recommended shape) -
+and **when a custom class maps to multiple standard classes, every mapped class's rules
+apply simultaneously**: retention, deletion, jurisdiction and disclosure obligations all
+attach, the strictest reading governs, and a declaration never chooses the blandest mapped
+class as the governing one. "Agent-delivered data" means every class above that an agent's
+interaction causes the site to receive - including metadata the agent did not deliberately
+send.
 
 ### Field notes
 
 - `declared` / `expires` / `last_reviewed` - a declaration is a claim about now, not forever.
   `expires` is REQUIRED: an expired declaration is graded as stale, not as current truth,
   because a site can change its entire infrastructure long after publishing a clean
-  declaration. Twelve months is the longest sensible window.
+  declaration. The timeline is checked as arithmetic, not just as syntax: **`declared` must
+  precede `expires`, `expires` must fall within twelve months of `declared`, `last_reviewed`
+  must not postdate `expires`, and `declared` must not sit in the future** beyond ordinary
+  clock skew - a syntactically valid date from 2099 is a freshness bypass, and a declaration
+  violating any of these is graded stale, exactly as if it had expired.
 - `retention` - **a machine-checkable map from data class to retention duration**: `none`,
   `indefinite`, or a count of days/months/years (`90d`, `6m`, `2y`). `content` is always
   required. **Coverage rule: every class that appears anywhere in the declaration - in any
@@ -157,10 +169,17 @@ metadata the agent did not deliberately send.
   to receive agent-delivered data through a declared processor, subprocessor, model provider,
   infrastructure provider or other intermediary - "we send it to A" is not honest when A
   forwards it to C, and "A sees it" while hiding C behind A is the loophole this rule closes.
-  Each entry carries a `recipient` position (`direct` or `downstream`, with `via` naming the
-  declared intermediary a downstream recipient receives through), a `role` (`processor`,
-  `subprocessor`, `infrastructure`, `analytics`, `security`, `model_provider`), what it sees,
-  and where it processes; the chain MUST terminate at declared boundaries - no declared party
+  Each entry carries a REQUIRED `recipient` position (`direct` or `downstream`) and a
+  REQUIRED `role` (`processor`, `subprocessor`, `infrastructure`, `analytics`, `security`,
+  `model_provider`) - a party whose position or kind is unstated leaves the graph
+  incomplete, and an incomplete graph is graded as one. The graph itself obeys hard
+  invariants: **every `identifier` is unique within the declaration; `via` is REQUIRED on a
+  downstream recipient and MUST equal exactly one declared party's identifier; `via` is
+  forbidden on a direct recipient; and the declared graph MUST be finite and acyclic** - a
+  cycle is not a disclosure, it is an invalid declaration graded F, and bounded node counts
+  keep a hostile graph from becoming a traversal attack on the checker. Identifiers compare
+  canonicalized (a lowercase DNS name or canonical origin, never mixed freely with URL
+  variants of itself). The chain MUST terminate at declared boundaries - no declared party
   may be a door to undeclared ones. **`identifier` is REQUIRED and is the machine-readable
   identity - a stable domain or operator-controlled URI; `name` is presentation only.**
   Corporate families and lookalike names ("Example AI", "Example AI Analytics", an acquired
@@ -202,7 +221,15 @@ metadata the agent did not deliberately send.
     such. The standard does not judge whether the cited law is right - it prevents "required
     by applicable law" from excusing everything forever;
   - it SHOULD rate-limit and monitor for abuse - authenticated deletion is still a write
-    endpoint an adversary can hammer.
+    endpoint an adversary can hammer;
+  - **deletion is complete or it says why not**: every class the declaration retains (any
+    retention entry other than `none`) MUST appear in `deletion.covers` or in a legal
+    hold - a "working deletion path" that quietly excludes the indefinitely-retained class
+    is the composition bug between clause 1 and clause 4, and it grades as undeclared for
+    what it excludes;
+  - `queued` is a promise with a date, not a parking lot: `expected_by` MUST be present and
+    MUST NOT sit more than thirty days out, and the final state MUST be queryable - a queue
+    that can be re-queued forever is a deletion path that never deletes.
 
   The minimal request/response shape, normative so implementations converge and probes have
   one surface to test rather than many:
@@ -211,7 +238,7 @@ metadata the agent did not deliberately send.
   POST /api/agent-delete
   { "interaction_id": "an-opaque-id", "deletion_token": "an-opaque-single-use-token" }
 
-  200 { "status": "deleted", "covers": ["identity"], "completed": "2026-01-02T00:00:00Z" }
+  200 { "status": "deleted", "covers": ["identity", "network_metadata"], "completed": "2026-01-02T00:00:00Z" }
   200 { "status": "queued", "expected_by": "2026-01-09T00:00:00Z" }
   200 { "status": "nothing-held" }
   401 { "status": "unauthorized" }
@@ -230,7 +257,12 @@ metadata the agent did not deliberately send.
   }
   ```
 
-  **A receipt MUST NOT echo the content it describes.** It names data classes and handling
+  A receipt travels as an HTTPS response body - never a cookie, whose ambient-transmission
+  semantics are exactly wrong for a capability - and **a response carrying a live deletion
+  capability MUST be explicitly non-cacheable (`Cache-Control: no-store`) and MUST NOT be
+  stored by any intermediary**, or the receipt-to-CDN-to-proxy chain becomes a capability
+  leak no token binding can fully contain. **A receipt MUST NOT echo the content it
+  describes.** It names data classes and handling
   state, never the words, files or values themselves - a receipt that restates a health
   question is a fresh copy of the most sensitive thing in the interaction. **A receipt's
   `interaction_id` MUST identify one interaction unambiguously within its origin** -
@@ -252,12 +284,14 @@ metadata the agent did not deliberately send.
 - `extensions` - the one home for anything site-specific beyond `custom_classes`. Namespaced
   keys (`"vendor.example/feature"`), contents ignored by consumers that do not recognize
   them, never a place to restate or contradict a core member.
-- `signature` - OPTIONAL, reserved: a declaration may carry a detached signature binding it to
-  its origin, so an agent can detect a tampered or replayed file even past a compromised CDN.
-  HTTP Message Signatures (RFC 9421) is the candidate mechanism. The concrete profile
-  (algorithms, key discovery) is deliberately not specified here: it ships only after
-  independent cryptographic review, and until then HTTPS transport is the trust model, stated
-  plainly as a limitation rather than dressed up as a guarantee.
+- `signature` - reserved, and **v0.4 consumers MUST ignore it entirely**: no checker, agent
+  or intermediary may treat its presence as evidence of anything, because no interoperable
+  profile exists yet and a homemade cryptographic interpretation shipped early is how crypto
+  disasters start. When the profile is defined - only after independent cryptographic
+  review - HTTP Message Signatures (RFC 9421) is the candidate mechanism and JSON
+  Canonicalization (RFC 8785) the candidate serialization, rather than invented rules.
+  Until then HTTPS transport is the trust model, stated plainly as a limitation rather than
+  dressed up as a guarantee.
 
 ## Capability binding and the replay model
 
@@ -270,8 +304,10 @@ layer boundary; the IETF's sender-constrained-token work (RFC 9449) documents ex
 failure mode. Applied here:
 
 - a deletion token is valid only at the origin that issued it, only for the interaction it
-  names, only for deletion, single-use, and short-lived - and non-exportable where the
-  platform can enforce that;
+  names, only for deletion, **only for the exact classes and operation it was issued for** -
+  a token minted to delete one interaction's content must be unusable as "delete the
+  account" - single-use, and short-lived, and non-exportable where the platform can enforce
+  that;
 - **the replay model is formal, not implied**: a capability or receipt carries its
   interaction nonce, issue time, expiry and audience (the origin it is for), and MUST NOT be
   accepted outside that exact scope or validity window - by the site, by the agent, or by
@@ -303,8 +339,19 @@ declaration is the obvious way to attack it. Any conforming checker:
   RFC 3986's normalization rules - handling default ports, IPv6 literals, IDN/punycode forms,
   trailing-dot hostnames and userinfo explicitly, and MUST NOT compare origins by string
   prefix or hostname suffix.
-- MUST NOT follow a redirect to a different origin than the one it is checking.
-- MUST enforce strict response-size and timeout limits on everything it fetches.
+- MUST NOT follow a redirect to a different origin than the one it is checking, and MUST
+  bound the WHOLE fetch, not each hop: a maximum redirect count, a maximum total duration
+  and a maximum total byte budget across every hop together - thirty same-origin redirects
+  of ten megabytes each is a resource attack that per-response limits never see.
+- MUST enforce strict response-size and timeout limits on everything it fetches, applied to
+  the DECODED representation as well as bytes on the wire - a small compressed body that
+  inflates a thousandfold is a decompression bomb, so both sizes and the expansion ratio
+  are bounded.
+- MUST use an explicitly controlled egress path: **ambient proxy configuration
+  (`HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`), proxy credentials and any other network
+  authority inherited from the execution environment are ignored**, because a poisoned
+  proxy variable re-routes a perfectly validated destination through an attacker - the
+  networking layer beneath the SSRF defense is part of the SSRF defense.
 - MUST NOT attach credentials, cookies or ambient authority to any request a declaration
   caused it to make.
 - MUST enforce the serialization rules above (UTF-8, duplicate-name rejection, unknown-core
@@ -322,6 +369,10 @@ declaration is the obvious way to attack it. Any conforming checker:
   facts by the published scoring rule.** Judgement may decide what to test; it never decides
   what a recorded fact says. Two checkers with the same facts reach the same grade, and
   incomplete evidence shows up as UNKNOWN/NOT_TESTED facts, never as optimistic letters.
+  Every recorded fact carries its evidence window - when it was observed, by which checker
+  and test-profile version - because a verified A is a claim about a bounded window, never a
+  timeless property: a site graded in August can change in September, and a grade that
+  outlives its evidence is the false comfort this standard exists to end.
 - MUST score transport-observed third parties and server-declared processors as separate
   facts, never merged into one "verified third parties" claim - the first is evidence, the
   second is a declaration, and an attacker defeats the strongest empirical test by keeping
@@ -347,6 +398,12 @@ declaration is the obvious way to attack it. Any conforming checker:
   floors hold in the meantime.
 - MUST apply the version-security rules above to earlier-format files: parse and display,
   report LEGACY, never grade under superseded rules on the current scale.
+
+One rule reaches past the checker to every agent consuming this format: **no server
+response, declaration, receipt or site-provided text can grant itself authority** - site
+data never becomes agent instructions, and a page announcing that "policy requires" the
+agent to disclose more, delete something, or change its security posture is content to be
+displayed, never a directive to be followed.
 
 Sites are held to the mirror rule: **a site MUST NOT special-case traffic it believes to be a
 conformance test.** Retention tests use randomized, unmarked synthetic data precisely so that
@@ -403,8 +460,12 @@ chain; together they cut all of them. The other standing chains: staying on an o
 format version to dodge every rule added since (closed by version security), CDN-shared
 infrastructure making two origins look like one (closed by exact-origin scope and the
 mid-session transition rule), hiding a recipient behind a declared aggregator (closed by
-transitive disclosure), and a checker turned into a weapon through the URLs and values a
-declaration feeds it (closed by the checker rules above).
+transitive disclosure), a checker turned into a weapon through the URLs and values a
+declaration feeds it (closed by the checker rules above), and **trust laundering**: a
+mediocre origin routing data through a processor with an excellent grade, so the agent
+reads the intermediary's A as covering data it received transitively - it does not; a grade
+speaks for a party's own declared conduct, never for another origin's data flowing through
+it, and per-flow data lineage (the roadmap's answer) is the only thing that ever will.
 
 ## Open questions
 
@@ -420,4 +481,8 @@ declaration feeds it (closed by the checker rules above).
 
 ## Status
 
-v0.4 draft, published for comment alongside the main standard document.
+v0.4 draft, published for comment alongside the main standard document - and **frozen**:
+the grammar and invariants above are stable for this comment period. Feedback is triaged,
+not folded in on arrival; changes land batched in the next version, and only a demonstrated
+exploit, an implementer-reported ambiguity, or the independent cryptographic review reopens
+the draft early.
