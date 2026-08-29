@@ -2,7 +2,7 @@
 
 *[Version française](README.fr.md)*
 
-**v0.4 - Draft for public comment**
+**v0.5 - Draft for public comment**
 
 ## Why this exists
 
@@ -150,7 +150,7 @@ every grade sits a set of recorded facts - each individual test result is exactl
 UNKNOWN or NOT_TESTED - and the letters are computed from those facts by the published rule.
 Judgement may decide what to test; it never decides what a recorded fact says. Two checkers
 with the same facts reach the same grade, and incomplete evidence surfaces as UNKNOWN facts,
-never as optimistic letters. The letters below are the v0.4 draft mapping, published for
+never as optimistic letters. The letters below are the v0.5 draft mapping, published for
 comment like everything else here:
 
 - **A** - declared and independently verified.
@@ -185,7 +185,7 @@ papered over: that is what the evidence labels are for.
 
 ## Status
 
-This is a v0.4 draft, published for comment - and frozen: the clauses, grammar and
+This is a v0.5 draft, published for comment - and frozen: the clauses, grammar and
 invariants are stable for this comment period. Feedback is triaged, never folded in on
 arrival; changes land batched in the next version, and only a demonstrated exploit, an
 implementer-reported ambiguity, or the independent cryptographic review reopens the draft

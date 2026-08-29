@@ -1,4 +1,4 @@
-# The declaration file - format v0.4
+# The declaration file - format v0.5
 
 *[Version française](SCHEMA.fr.md)*
 
@@ -42,7 +42,7 @@ and keep every protection added since off its own back. So the rule is explicit:
   applies an older format's weaker rules and then reports the result on the current scale.
 - Older formats sunset: once a version's successor has been published for a defined comment
   period, the older version leaves the graded set. The current graded set is exactly:
-  **v0.4**.
+  **v0.5**.
 
 ## Strict serialization
 
@@ -71,7 +71,7 @@ This is an illustrative example, not any real organization's actual declaration:
 
 ```json
 {
-  "version": "0.4",
+  "version": "0.5",
   "declared": "2026-01-01T00:00:00Z",
   "expires": "2026-07-01T00:00:00Z",
   "last_reviewed": "2026-01-01T00:00:00Z",
@@ -284,7 +284,7 @@ send.
 - `extensions` - the one home for anything site-specific beyond `custom_classes`. Namespaced
   keys (`"vendor.example/feature"`), contents ignored by consumers that do not recognize
   them, never a place to restate or contradict a core member.
-- `signature` - reserved, and **v0.4 consumers MUST ignore it entirely**: no checker, agent
+- `signature` - reserved, and **v0.5 consumers MUST ignore it entirely**: no checker, agent
   or intermediary may treat its presence as evidence of anything, because no interoperable
   profile exists yet and a homemade cryptographic interpretation shipped early is how crypto
   disasters start. When the profile is defined - only after independent cryptographic
@@ -472,16 +472,16 @@ it, and per-flow data lineage (the roadmap's answer) is the only thing that ever
 - The concrete signature profile and the concrete deletion-token construction (see above) -
   both defined as extension points with normative binding requirements, deliberately
   unprofiled pending independent cryptographic review.
-- Versioning and migration. v0.4 is a breaking change to v0.3's published grammar (bounded
-  `legal_holds` gained required `purpose`/`legal_basis`/`review_by`, `recipient`/`via` and
-  `extensions` were added, the core grammar closed) - and it is versioned rather than mutated
-  in place, exactly what the version-security section above demands of everyone else. Earlier
-  formats are handled by those same rules: parsed, displayed, reported LEGACY, never graded on
-  the current scale.
+- Versioning and migration. v0.5 is a breaking change to v0.4's published grammar
+  (`role` and `recipient` became required on every third party, custom-class names colliding
+  with standard classes are rejected, and the `via` cross-field rules became schema-level) -
+  versioned rather than mutated in place, exactly what the version-security section above
+  demands of everyone else. Earlier formats are handled by those same rules: parsed,
+  displayed, reported LEGACY, never graded on the current scale.
 
 ## Status
 
-v0.4 draft, published for comment alongside the main standard document - and **frozen**:
+v0.5 draft, published for comment alongside the main standard document - and **frozen**:
 the grammar and invariants above are stable for this comment period. Feedback is triaged,
 not folded in on arrival; changes land batched in the next version, and only a demonstrated
 exploit, an implementer-reported ambiguity, or the independent cryptographic review reopens

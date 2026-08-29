@@ -2,7 +2,7 @@
 
 *[English version](README.md)*
 
-**v0.4 - Ébauche pour commentaires publics**
+**v0.5 - Ébauche pour commentaires publics**
 
 ## Pourquoi ceci existe
 
@@ -169,7 +169,7 @@ exactement PASS, FAIL, UNKNOWN ou NOT_TESTED - et les lettres sont calculées à
 faits par la règle publiée. Le jugement peut décider quoi tester; il ne décide jamais ce que
 dit un fait consigné. Deux vérificateurs disposant des mêmes faits arrivent à la même note, et
 une preuve incomplète se manifeste comme des faits UNKNOWN, jamais comme des lettres
-optimistes. Les lettres ci-dessous sont la correspondance provisoire de la v0.4, publiée pour
+optimistes. Les lettres ci-dessous sont la correspondance provisoire de la v0.5, publiée pour
 commentaires comme tout le reste ici :
 
 - **A** - déclarée et vérifiée de façon indépendante.
@@ -208,7 +208,7 @@ les étiquettes de preuve.
 
 ## Statut
 
-Ceci est une ébauche v0.4, publiée pour commentaires - et gelée : les clauses, la
+Ceci est une ébauche v0.5, publiée pour commentaires - et gelée : les clauses, la
 grammaire et les invariants sont stables pour cette période de commentaires. Les
 commentaires sont triés, jamais intégrés à leur arrivée; les changements arrivent groupés
 dans la version suivante, et seuls un exploit démontré, une ambiguïté rapportée par un
