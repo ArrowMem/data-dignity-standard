@@ -32,8 +32,17 @@
     },
     "custom_classes": {
       "type": "object",
-      "description": "Site-specific class names, each mapped to one or more standard classes. Additional to the standard vocabulary, never a substitute: an unmapped custom class is graded as undeclared, and a mapping must preserve sensitivity (SCHEMA.md, Data classes).",
+      "description": "Site-specific class names, each mapped to one or more standard classes. Additional to the standard vocabulary, never a substitute: an unmapped custom class is graded as undeclared, a mapping must preserve sensitivity, a custom name must never collide with a standard class name (one token, one meaning), and when a custom class maps to several standard classes every mapped class's rules apply - strictest reading governs (SCHEMA.md, Data classes).",
       "maxProperties": 50,
+      "propertyNames": {
+        "maxLength": 200,
+        "not": {
+          "enum": [
+            "content", "identity", "authentication", "network_metadata",
+            "device_metadata", "financial", "health", "location", "files", "derived"
+          ]
+        }
+      },
       "additionalProperties": {
         "type": "array",
         "items": { "$ref": "#/$defs/standardClass" },
@@ -46,8 +55,12 @@
       "maxItems": 200,
       "items": {
         "type": "object",
-        "required": ["name", "identifier", "data_seen"],
+        "required": ["name", "identifier", "role", "recipient", "data_seen"],
         "additionalProperties": false,
+        "if": { "properties": { "recipient": { "const": "downstream" } } },
+        "then": { "required": ["via"] },
+        "else": { "not": { "required": ["via"] } },
+        "$comment": "Cross-field invariants the schema language cannot express, checker-enforced: identifiers unique within the declaration, via must equal exactly one declared party's identifier, and the graph must be finite and acyclic - a cycle is an invalid declaration graded F (SCHEMA.md, third_parties).",
         "properties": {
           "name": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Presentation only; identity lives in identifier." },
           "identifier": { "type": "string", "minLength": 1, "maxLength": 300, "description": "Stable machine-readable identity: a domain or operator-controlled URI." },

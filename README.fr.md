@@ -208,7 +208,11 @@ les étiquettes de preuve.
 
 ## Statut
 
-Ceci est une ébauche v0.4, publiée pour commentaires. ArrowMem entend publier sa propre
+Ceci est une ébauche v0.4, publiée pour commentaires - et gelée : les clauses, la
+grammaire et les invariants sont stables pour cette période de commentaires. Les
+commentaires sont triés, jamais intégrés à leur arrivée; les changements arrivent groupés
+dans la version suivante, et seuls un exploit démontré, une ambiguïté rapportée par un
+implémenteur, ou la revue cryptographique indépendante rouvrent l'ébauche plus tôt. ArrowMem entend publier sa propre
 déclaration et s'évaluer selon cette norme avant de le demander à quiconque. Un vérificateur de
 référence gratuit et ouvert est prévu peu après la norme elle-même, construit selon les règles
 pour vérificateurs de `SCHEMA.md`.

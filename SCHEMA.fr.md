@@ -114,7 +114,7 @@ de code ci-dessous reste en anglais, langue de travail du format lui-même - un 
     "handle": "https://example.com/api/agent-delete",
     "method": "POST",
     "auth": "receipt-token",
-    "covers": ["identity"],
+    "covers": ["identity", "network_metadata"],
     "legal_holds": [
       { "covers": "consent records", "purpose": "proving consent was given",
         "legal_basis": "applicable-privacy-law", "review_by": "2027-01-01T00:00:00Z",
@@ -149,7 +149,17 @@ personnalisée non associée comme non déclarée - mécaniquement, pas par juge
 données relèvent manifestement de `health`, `financial`, `location` ou `authentication` DOIT
 être associée à cette classe - l'associer seulement à une classe plus large et plus fade
 (`derived`, `content`) pour diluer ce qu'elle est, c'est la même évasion un niveau plus haut,
-et c'est noté de la même façon. « Données transmises par un agent » désigne toute classe
+et c'est noté de la même façon. Deux invariants de plus ferment l'ambiguïté restante :
+**un nom de classe personnalisée NE DOIT JAMAIS être égal à un nom de classe normalisée** -
+une classe personnalisée nommée `health` associée à `derived` donnerait deux sens à un même
+mot, exactement la classe de confusion d'analyse que ce format existe pour tuer, alors le
+schéma rejette la collision d'emblée (des noms avec espace de noms comme
+`example.com/loyalty-profile` sont la forme recommandée) - et **quand une classe
+personnalisée est associée à plusieurs classes normalisées, les règles de chaque classe
+associée s'appliquent simultanément** : conservation, suppression, juridiction et
+divulgation s'attachent toutes, la lecture la plus stricte gouverne, et une déclaration ne
+choisit jamais la classe associée la plus anodine comme classe directrice. « Données
+transmises par un agent » désigne toute classe
 ci-dessus que l'interaction d'un agent amène le site à recevoir - y compris les métadonnées que
 l'agent n'a pas délibérément envoyées.
 
@@ -158,8 +168,13 @@ l'agent n'a pas délibérément envoyées.
 - `declared` / `expires` / `last_reviewed` - une déclaration est une affirmation sur le
   présent, pas sur toujours. `expires` est OBLIGATOIRE : une déclaration expirée est évaluée
   comme périmée, jamais comme une vérité actuelle, parce qu'un site peut changer toute son
-  infrastructure longtemps après avoir publié une déclaration impeccable. Douze mois est la
-  fenêtre maximale raisonnable.
+  infrastructure longtemps après avoir publié une déclaration impeccable. La chronologie se
+  vérifie comme de l'arithmétique, pas seulement comme de la syntaxe : **`declared` doit
+  précéder `expires`, `expires` doit tomber dans les douze mois de `declared`,
+  `last_reviewed` ne doit pas être postérieur à `expires`, et `declared` ne doit pas se
+  situer dans le futur** au-delà d'un décalage d'horloge ordinaire - une date de 2099
+  syntaxiquement valide est un contournement de fraîcheur, et une déclaration qui viole
+  l'un de ces invariants est évaluée comme périmée, exactement comme si elle avait expiré.
 - `retention` - **une table vérifiable par machine, de classe de données vers durée de
   conservation** : `none`, `indefinite`, ou un nombre de jours/mois/années (`90d`, `6m`,
   `2y`). `content` est toujours obligatoire. **Règle de couverture : toute classe qui apparaît
@@ -177,11 +192,20 @@ l'agent n'a pas délibérément envoyées.
   fournisseur, sous-traitant, fournisseur de modèle, fournisseur d'infrastructure ou autre
   intermédiaire déclaré - « nous l'envoyons à A » n'est pas honnête quand A le transmet à C,
   et « A le voit » en cachant C derrière A est l'échappatoire que cette règle ferme. Chaque
-  entrée porte une position `recipient` (`direct` ou `downstream`, `via` nommant
-  l'intermédiaire déclaré par lequel un destinataire en aval reçoit), un `role` (`processor`,
-  `subprocessor`, `infrastructure`, `analytics`, `security`, `model_provider`), ce qu'elle
-  voit, et où elle traite; la chaîne DOIT se terminer à des frontières déclarées - aucune
-  partie déclarée ne peut être une porte vers des parties non déclarées. **`identifier` est
+  entrée porte une position `recipient` OBLIGATOIRE (`direct` ou `downstream`) et un `role`
+  OBLIGATOIRE (`processor`, `subprocessor`, `infrastructure`, `analytics`, `security`,
+  `model_provider`) - une partie dont la position ou la nature n'est pas énoncée laisse le
+  graphe incomplet, et un graphe incomplet est noté comme tel. Le graphe lui-même obéit à
+  des invariants durs : **chaque `identifier` est unique dans la déclaration; `via` est
+  OBLIGATOIRE sur un destinataire en aval et DOIT être égal à l'identifiant d'exactement
+  une partie déclarée; `via` est interdit sur un destinataire direct; et le graphe déclaré
+  DOIT être fini et acyclique** - un cycle n'est pas une divulgation, c'est une déclaration
+  invalide notée F, et des nombres de noeuds bornés empêchent un graphe hostile de devenir
+  une attaque de parcours contre le vérificateur. Les identifiants se comparent
+  canonicalisés (un nom DNS en minuscules ou une origine canonique, jamais mélangés
+  librement avec des variantes d'URL d'eux-mêmes). La chaîne DOIT se terminer à des
+  frontières déclarées - aucune partie déclarée ne peut être une porte vers des parties non
+  déclarées. **`identifier` est
   OBLIGATOIRE et constitue l'identité lisible par machine - un domaine stable ou un URI
   contrôlé par l'exploitant; `name` n'est que la présentation.** Les familles d'entreprises et
   les noms semblables (« Example AI », « Example AI Analytics », un fournisseur racheté)
@@ -228,7 +252,17 @@ l'agent n'a pas délibérément envoyées.
     d'alarme, noté comme tel. La norme ne juge pas si la loi citée est fondée - elle empêche
     « exigé par la loi applicable » de tout excuser, pour toujours;
   - il DEVRAIT limiter le débit et surveiller les abus - une suppression authentifiée reste un
-    point d'écriture qu'un adversaire peut marteler.
+    point d'écriture qu'un adversaire peut marteler;
+  - **la suppression est complète ou elle dit pourquoi pas** : chaque classe que la
+    déclaration conserve (toute entrée de conservation autre que `none`) DOIT figurer dans
+    `deletion.covers` ou dans une obligation légale - un « mécanisme de suppression
+    fonctionnel » qui exclut en silence la classe conservée indéfiniment est le défaut de
+    composition entre la clause 1 et la clause 4, et il est noté non déclaré pour ce qu'il
+    exclut;
+  - `queued` est une promesse avec une date, pas un stationnement : `expected_by` DOIT être
+    présent et NE DOIT PAS se situer à plus de trente jours, et l'état final DOIT être
+    interrogeable - une file qu'on peut remettre en file pour toujours est un mécanisme de
+    suppression qui ne supprime jamais.
 
   La forme minimale de requête et de réponse, normative pour que les implémentations
   convergent et que les sondes aient une seule surface à tester plutôt que plusieurs :
@@ -237,7 +271,7 @@ l'agent n'a pas délibérément envoyées.
   POST /api/agent-delete
   { "interaction_id": "an-opaque-id", "deletion_token": "an-opaque-single-use-token" }
 
-  200 { "status": "deleted", "covers": ["identity"], "completed": "2026-01-02T00:00:00Z" }
+  200 { "status": "deleted", "covers": ["identity", "network_metadata"], "completed": "2026-01-02T00:00:00Z" }
   200 { "status": "queued", "expected_by": "2026-01-09T00:00:00Z" }
   200 { "status": "nothing-held" }
   401 { "status": "unauthorized" }
@@ -257,7 +291,13 @@ l'agent n'a pas délibérément envoyées.
   }
   ```
 
-  **Un reçu NE DOIT PAS reproduire le contenu qu'il décrit.** Il nomme des classes de données
+  Un reçu voyage comme corps de réponse HTTPS - jamais comme témoin (cookie), dont la
+  sémantique de transmission ambiante est exactement le contraire de ce qu'il faut pour une
+  capacité - et **une réponse portant une capacité de suppression vivante DOIT être
+  explicitement non mise en cache (`Cache-Control: no-store`) et NE DOIT être stockée par
+  aucun intermédiaire**, sans quoi la chaîne reçu-CDN-mandataire devient une fuite de
+  capacité qu'aucune liaison de jeton ne peut entièrement contenir. **Un reçu NE DOIT PAS
+  reproduire le contenu qu'il décrit.** Il nomme des classes de données
   et leur état de traitement, jamais les mots, fichiers ou valeurs eux-mêmes - un reçu qui
   répète une question de santé est une nouvelle copie de la chose la plus sensible de
   l'interaction. **Le `interaction_id` d'un reçu DOIT identifier une interaction sans
@@ -283,12 +323,15 @@ l'agent n'a pas délibérément envoyées.
   `custom_classes`. Clés avec espace de noms (`"vendor.example/feature"`), contenu ignoré par
   les consommateurs qui ne le reconnaissent pas, jamais un endroit pour reformuler ou
   contredire un membre de base.
-- `signature` - OPTIONNEL, réservé : une déclaration peut porter une signature détachée la
-  liant à son origine, pour qu'un agent détecte un fichier altéré ou rejoué, même au-delà d'un
-  CDN compromis. HTTP Message Signatures (RFC 9421) est le mécanisme candidat. Le profil
-  concret (algorithmes, découverte des clés) n'est délibérément pas spécifié ici : il ne sera
-  publié qu'après une revue cryptographique indépendante, et d'ici là, le transport HTTPS est
-  le modèle de confiance, énoncé clairement comme une limite plutôt que déguisé en garantie.
+- `signature` - réservé, et **les consommateurs v0.4 DOIVENT l'ignorer entièrement** :
+  aucun vérificateur, agent ou intermédiaire ne peut traiter sa présence comme la preuve de
+  quoi que ce soit, parce qu'aucun profil interopérable n'existe encore et qu'une
+  interprétation cryptographique maison livrée trop tôt est la façon dont commencent les
+  désastres cryptographiques. Quand le profil sera défini - seulement après une revue
+  cryptographique indépendante - HTTP Message Signatures (RFC 9421) est le mécanisme
+  candidat et la canonicalisation JSON (RFC 8785) la sérialisation candidate, plutôt que
+  des règles inventées. D'ici là, le transport HTTPS est le modèle de confiance, énoncé
+  clairement comme une limite plutôt que déguisé en garantie.
 
 ## Liaison des capacités et modèle de rejeu
 
@@ -302,8 +345,10 @@ de couche; les travaux de l'IETF sur les jetons liés à l'émetteur (RFC 9449) 
 exactement ce mode d'échec. Appliqué ici :
 
 - un jeton de suppression n'est valide qu'à l'origine qui l'a émis, que pour l'interaction
-  qu'il nomme, que pour la suppression, à usage unique et à courte durée de vie - et non
-  exportable là où la plateforme peut l'imposer;
+  qu'il nomme, que pour la suppression, **que pour les classes et l'opération exactes pour
+  lesquelles il a été émis** - un jeton frappé pour supprimer le contenu d'une interaction
+  doit être inutilisable comme « supprimer le compte » -, à usage unique, à courte durée de
+  vie, et non exportable là où la plateforme peut l'imposer;
 - **le modèle de rejeu est formel, pas implicite** : une capacité ou un reçu porte son nonce
   d'interaction, son heure d'émission, son expiration et son audience (l'origine à laquelle il
   est destiné), et NE DOIT PAS être accepté hors de cette portée exacte ou de cette fenêtre de
@@ -337,9 +382,20 @@ déclaration hostile est la façon évidente de l'attaquer. Tout vérificateur c
   ports par défaut, les littéraux IPv6, les formes IDN/punycode, les noms d'hôtes à point
   final et l'userinfo, et NE DOIT PAS comparer des origines par préfixe de chaîne ou suffixe
   de nom d'hôte.
-- NE DOIT PAS suivre une redirection vers une origine différente de celle qu'il vérifie.
+- NE DOIT PAS suivre une redirection vers une origine différente de celle qu'il vérifie, et
+  DOIT borner la récupération ENTIÈRE, pas chaque saut : un nombre maximal de redirections,
+  une durée totale maximale et un budget d'octets total sur tous les sauts ensemble -
+  trente redirections de même origine de dix mégaoctets chacune sont une attaque de
+  ressources que des limites par réponse ne voient jamais.
 - DOIT imposer des limites strictes de taille de réponse et de délai sur tout ce qu'il
-  télécharge.
+  télécharge, appliquées à la représentation DÉCODÉE autant qu'aux octets sur le fil - un
+  petit corps compressé qui gonfle d'un facteur mille est une bombe de décompression, alors
+  les deux tailles et le taux d'expansion sont bornés.
+- DOIT utiliser un chemin de sortie explicitement contrôlé : **la configuration mandataire
+  ambiante (`HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`), les identifiants de mandataire et
+  toute autre autorité réseau héritée de l'environnement d'exécution sont ignorés**, parce
+  qu'une variable de mandataire empoisonnée détourne une destination parfaitement validée
+  vers un attaquant - la couche réseau sous la défense SSRF fait partie de la défense SSRF.
 - NE DOIT PAS joindre d'identifiants, de témoins ou d'autorité ambiante à une requête
   provoquée par une déclaration.
 - DOIT appliquer les règles de sérialisation ci-dessus (UTF-8, rejet des noms dupliqués, rejet
@@ -358,7 +414,11 @@ déclaration hostile est la façon évidente de l'attaquer. Tout vérificateur c
   de ces faits par la règle de notation publiée.** Le jugement peut décider quoi tester; il ne
   décide jamais ce que dit un fait consigné. Deux vérificateurs disposant des mêmes faits
   arrivent à la même note, et une preuve incomplète apparaît comme des faits
-  UNKNOWN/NOT_TESTED, jamais comme des lettres optimistes.
+  UNKNOWN/NOT_TESTED, jamais comme des lettres optimistes. Chaque fait consigné porte sa
+  fenêtre de preuve - quand il a été observé, par quelle version du vérificateur et du
+  profil de test - parce qu'un A vérifié est une affirmation sur une fenêtre bornée, jamais
+  une propriété intemporelle : un site noté en août peut changer en septembre, et une note
+  qui survit à sa preuve est le faux réconfort que cette norme existe pour faire cesser.
 - DOIT noter les tiers observés sur le transport et les fournisseurs déclarés côté serveur
   comme des faits séparés, jamais fusionnés en une seule affirmation « tiers vérifiés » - le
   premier est une preuve, le second une déclaration, et un attaquant déjoue le test empirique
@@ -388,6 +448,13 @@ déclaration hostile est la façon évidente de l'attaquer. Tout vérificateur c
 - DOIT appliquer les règles de sécurité des versions ci-dessus aux fichiers de formats
   antérieurs : analyser et afficher, rapporter LEGACY, jamais noter selon des règles
   remplacées sur l'échelle actuelle.
+
+Une règle dépasse le vérificateur et atteint chaque agent qui consomme ce format : **aucune
+réponse de serveur, déclaration, reçu ou texte fourni par un site ne peut s'accorder une
+autorité à lui-même** - les données d'un site ne deviennent jamais des instructions d'agent,
+et une page annonçant que « la politique exige » que l'agent divulgue davantage, supprime
+quelque chose ou change sa posture de sécurité est un contenu à afficher, jamais une
+directive à suivre.
 
 Les sites sont tenus à la règle miroir : **un site NE DOIT PAS traiter différemment un trafic
 qu'il croit être un test de conformité.** Les tests de rétention utilisent des données
@@ -455,7 +522,12 @@ des versions), une infrastructure CDN partagée faisant passer deux origines pou
 (fermée par la portée d'origine exacte et la règle de transition en cours de session), cacher
 un destinataire derrière un agrégateur déclaré (fermée par la divulgation transitive), et un
 vérificateur transformé en arme par les URL et valeurs qu'une déclaration lui fournit (fermée
-par les règles pour vérificateurs ci-dessus).
+par les règles pour vérificateurs ci-dessus), et **le blanchiment de confiance** : une origine
+médiocre faisant transiter des données par un sous-traitant à l'excellente note, pour que
+l'agent lise le A de l'intermédiaire comme couvrant des données reçues transitivement - il ne
+les couvre pas; une note parle de la conduite déclarée d'une partie pour elle-même, jamais des
+données d'une autre origine qui la traversent, et la traçabilité par flux (la réponse de la
+feuille de route) est la seule chose qui le fera jamais.
 
 ## Questions ouvertes
 
@@ -472,4 +544,9 @@ par les règles pour vérificateurs ci-dessus).
 
 ## Statut
 
-Ébauche v0.4, publiée pour commentaires en parallèle avec le document principal de la norme.
+Ébauche v0.4, publiée pour commentaires en parallèle avec le document principal de la
+norme - et **gelée** : la grammaire et les invariants ci-dessus sont stables pour cette
+période de commentaires. Les commentaires sont triés, jamais intégrés à leur arrivée; les
+changements arrivent groupés dans la version suivante, et seuls un exploit démontré, une
+ambiguïté rapportée par un implémenteur, ou la revue cryptographique indépendante rouvrent
+l'ébauche plus tôt.
