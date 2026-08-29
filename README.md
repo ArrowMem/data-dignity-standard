@@ -2,7 +2,7 @@
 
 *[Version française](README.fr.md)*
 
-**v0.3 - Draft for public comment**
+**v0.4 - Draft for public comment**
 
 ## Why this exists
 
@@ -119,12 +119,24 @@ The ledger is the most sensitive database this standard creates, so its rules ha
   multi-site deletion run requires the person's explicit, informed go-ahead - preview what
   will be asked of which origins and which classes, get the authorization, execute, report
   per-origin results. An agent must never infer permission from the fact that the ledger
-  contains a token, whatever a prompt, plugin or automation says.
+  contains a token, whatever a prompt, plugin or automation says - and **the authorization
+  itself must be an act the person performs outside the model's context** (an OS-level
+  confirmation, a signed approval object), because any approval that is just text in a
+  prompt is text a prompt injection can fabricate.
+- The capability store's keys are protected as strongly as the platform allows -
+  OS-keystore or hardware-backed where available, never held in cleartext by the agent
+  longer than the operation needs.
+- **An interaction is ledgered whether or not the site issued a receipt.** Receipts
+  reconcile the ledger; they do not define it - a site that issues none still appears, with
+  its entry marked unreceipted, so silence on the site's side never becomes a blind spot on
+  the person's side.
 
-Certification tests the same things it names: the agent produces a complete, exportable
-ledger for a session with nothing silently dropped, entries reconcile against the receipts of
-sites that issue them, capabilities sit outside the audit export, and bulk deletion refuses to
-run without explicit authorization. Sites are graded on clauses 1 through 5; agents are
+Certification tests the same things it names, adversarially: the agent produces a complete,
+exportable ledger for a session with nothing silently dropped, entries reconcile against the
+receipts of sites that issue them (and unreceipted interactions still appear), capabilities
+sit outside the audit export and survive an export-leak attempt, and bulk deletion refuses to
+run on a fabricated in-context approval - certification includes prompt-injection and
+capability-leakage tests, not just the happy path. Sites are graded on clauses 1 through 5; agents are
 certifiable on this one.
 
 ## Grading
@@ -133,8 +145,13 @@ Each clause is scored, not pass/fail - a site with real gaps still has a ladder 
 score can be re-checked over time as a site changes. Composite and per-clause grades are both
 reported, each labelled with its evidence level (declared, observed, or verified).
 
-The scoring rule is deterministic, so two independent checkers reach the same grade. The
-letters below are the v0.2 draft mapping, published for comment like everything else here:
+The scoring rule is deterministic in the only way that survives adversaries: underneath
+every grade sits a set of recorded facts - each individual test result is exactly PASS, FAIL,
+UNKNOWN or NOT_TESTED - and the letters are computed from those facts by the published rule.
+Judgement may decide what to test; it never decides what a recorded fact says. Two checkers
+with the same facts reach the same grade, and incomplete evidence surfaces as UNKNOWN facts,
+never as optimistic letters. The letters below are the v0.4 draft mapping, published for
+comment like everything else here:
 
 - **A** - declared and independently verified.
 - **B** - declared, observed behavior consistent, nothing contradicting it.
@@ -143,6 +160,9 @@ letters below are the v0.2 draft mapping, published for comment like everything 
   at F: **a site caught in one false statement cannot outscore a site that stayed silent.**
 - An expired declaration (see `expires` in `SCHEMA.md`) caps every clause it covers at
   D - the undeclared level - until it is re-issued.
+- A declaration in a superseded format is reported **LEGACY** - parsed and displayed, never
+  graded on the current scale. Grading an old format under its own weaker rules would be a
+  standing invitation to never upgrade; `SCHEMA.md`'s version-security section is the rule.
 
 The composite is the lowest of: the per-clause grades' mean (rounded down), and any cap
 above. Same inputs, same grade, whoever runs the check.
@@ -165,7 +185,7 @@ papered over: that is what the evidence labels are for.
 
 ## Status
 
-This is a v0.2 draft, published for comment. ArrowMem intends to publish its own declaration
+This is a v0.4 draft, published for comment. ArrowMem intends to publish its own declaration
 file and score against this standard before asking anyone else to. A free, open reference
 checker is planned to follow shortly after the standard itself, built to the checker rules in
 `SCHEMA.md`.
