@@ -2,41 +2,51 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/ArrowMem/data-dignity-standard/master/data-dignity.schema.json",
   "title": "Data Dignity declaration",
-  "description": "Machine-validatable schema for /.well-known/data-dignity.json, format v0.2 only. v0.1 declarations lack expires and deletion.auth by design and are handled by a checker's compatibility rules, not by this schema. Prose spec: SCHEMA.md.",
+  "description": "Machine-validatable schema for /.well-known/data-dignity.json, format v0.3 only. Earlier formats are handled by a checker's compatibility rules, not by this schema. Prose spec: SCHEMA.md. Every string value in a declaration is attacker-controlled data and must never be interpreted as executable instructions by any consumer.",
   "type": "object",
   "required": ["version", "declared", "expires", "retention", "third_parties", "jurisdiction", "deletion"],
   "additionalProperties": true,
   "properties": {
-    "version": { "type": "string", "const": "0.2" },
+    "version": { "type": "string", "const": "0.3" },
     "declared": { "type": "string", "format": "date-time" },
     "expires": { "type": "string", "format": "date-time" },
     "last_reviewed": { "type": "string", "format": "date-time" },
     "retention": {
       "type": "object",
+      "description": "A machine-checkable map from data class to retention duration. Coverage rule (checker-enforced): every class appearing in any data_seen, in deletion.covers, or as a custom-class mapping target must have an entry here.",
       "required": ["content"],
       "properties": {
-        "content": {
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "items": { "type": "string" } }
-          ]
-        },
-        "identity": {
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "items": { "type": "string" } }
-          ]
-        },
+        "content": { "$ref": "#/$defs/duration" },
+        "identity": { "$ref": "#/$defs/duration" },
+        "authentication": { "$ref": "#/$defs/duration" },
+        "network_metadata": { "$ref": "#/$defs/duration" },
+        "device_metadata": { "$ref": "#/$defs/duration" },
+        "financial": { "$ref": "#/$defs/duration" },
+        "health": { "$ref": "#/$defs/duration" },
+        "location": { "$ref": "#/$defs/duration" },
+        "files": { "$ref": "#/$defs/duration" },
+        "derived": { "$ref": "#/$defs/duration" },
         "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "custom_classes": {
+      "type": "object",
+      "description": "Site-specific class names, each mapped to one or more standard classes. Additional to the standard vocabulary, never a substitute: an unmapped custom class is graded as undeclared.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/standardClass" },
+        "minItems": 1
       }
     },
     "third_parties": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "data_seen"],
+        "required": ["name", "identifier", "data_seen"],
         "properties": {
-          "name": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1, "description": "Presentation only; identity lives in identifier." },
+          "identifier": { "type": "string", "minLength": 1, "description": "Stable machine-readable identity: a domain or operator-controlled URI." },
           "role": {
             "type": "string",
             "enum": ["processor", "subprocessor", "infrastructure", "analytics", "security", "model_provider"]
@@ -44,45 +54,38 @@
           "purpose": { "type": "string" },
           "data_seen": {
             "type": "array",
-            "items": { "$ref": "#/$defs/dataClass" },
-            "minItems": 1
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1,
+            "description": "Standard classes, or custom classes that custom_classes maps."
           },
           "jurisdiction": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
     "jurisdiction": {
-      "anyOf": [
-        {
-          "type": "object",
-          "required": ["processing", "storage"],
-          "properties": {
-            "processing": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-            "storage": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-            "backups": { "type": "array", "items": { "type": "string" } },
-            "legal": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        {
-          "type": "array",
-          "items": { "type": "string" },
-          "minItems": 1,
-          "$comment": "v0.1 shape, accepted for backward compatibility; graded as the weaker v0.1 declaration."
-        }
-      ]
+      "type": "object",
+      "required": ["processing", "storage"],
+      "properties": {
+        "processing": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "storage": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "backups": { "type": "array", "items": { "type": "string" } },
+        "legal": { "type": "array", "items": { "type": "string" } }
+      }
     },
     "deletion": {
       "type": "object",
       "required": ["handle", "method", "auth"],
       "properties": {
-        "handle": { "type": "string", "pattern": "^https://" },
+        "handle": {
+          "type": "string",
+          "pattern": "^https://[A-Za-z0-9][A-Za-z0-9.-]*(/[^\\s]*)?$",
+          "description": "MUST be same-origin with the declaration (checker-enforced; a schema cannot see the serving origin). No explicit port, no IP literal, no credentials in the URL."
+        },
         "method": { "type": "string", "enum": ["POST", "DELETE"] },
         "auth": { "type": "string", "minLength": 1 },
         "covers": {
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "items": { "type": "string" } }
-          ]
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
         },
         "legal_holds": {
           "type": "array",
@@ -104,10 +107,14 @@
     }
   },
   "$defs": {
-    "dataClass": {
+    "duration": {
       "type": "string",
-      "$comment": "The controlled vocabulary from SCHEMA.md. Site-specific additions are allowed, hence no closed enum, but checkers grade unrecognized classes as needing human review.",
-      "examples": [
+      "pattern": "^(none|indefinite|[0-9]+[dmy])$",
+      "description": "none, indefinite, or a count of days/months/years: 90d, 6m, 2y."
+    },
+    "standardClass": {
+      "type": "string",
+      "enum": [
         "content", "identity", "authentication", "network_metadata",
         "device_metadata", "financial", "health", "location", "files", "derived"
       ]
