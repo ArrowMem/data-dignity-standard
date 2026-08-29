@@ -59,10 +59,10 @@ suivre : `SCHEMA.md` dans ce dépôt.
 
 ## Les clauses
 
-Cette version couvre cinq clauses, soit la moitié de la norme qui concerne le site. D'autres
-clauses - portant sur ce qu'un agent IA respectueux de la dignité des données doit lui-même
-faire, ainsi que des mécanismes d'application plus stricts - sont prévues pour des versions
-ultérieures; elles ne sont pas omises par oubli.
+Cette version couvre six clauses : cinq pour le site, et une première clause pour l'agent
+lui-même, parce que la dignité des données est une propriété à deux faces - les sites sont
+notés, les agents peuvent être certifiés. Des mécanismes d'application plus stricts sont prévus
+pour des versions ultérieures; ils ne sont pas omis par oubli.
 
 ### 1 - Rétention déclarée, vérifiée, jamais présumée sur parole
 Le site indique ce qu'il conserve d'une interaction avec un agent, pendant combien de temps, et
@@ -99,6 +99,17 @@ précise. Un reçu nomme des classes de données, jamais le contenu lui-même - 
 devenir une seconde copie de la chose sensible qu'il décrit. C'est la clause la plus récente et
 la plus exigeante, celle que très peu de sites devraient prendre en charge au départ - c'est
 exactement pourquoi elle existe comme ligne évaluée à part plutôt que comme exigence.
+
+### 6 - Le registre (côté agent)
+Le miroir du reçu, et la première clause qui porte sur l'agent plutôt que sur le site : un
+agent respectueux de la dignité des données tient son propre registre - chaque site touché au
+nom d'une personne, ce qui a été divulgué, quand, et le mécanisme de suppression de chaque
+interaction. Quand un site subit une brèche des années plus tard, une seule requête répond à
+« qu'avaient-ils de moi », et chaque mécanisme de suppression peut être exercé d'un coup.
+Vérifié par la même règle que tout le reste : l'agent produit un registre complet et
+exportable pour une session, et ses entrées se réconcilient avec les reçus des sites qui en
+émettent. Les sites sont notés sur les clauses 1 à 5; les agents sont certifiables sur
+celle-ci.
 
 ## Évaluation
 
