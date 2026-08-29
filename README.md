@@ -54,9 +54,9 @@ conforming checker must follow: `SCHEMA.md` in this repository.
 
 ## The clauses
 
-This version covers five clauses, the site-side half of the standard. Further
-clauses - covering what a dignity-respecting AI agent itself must do, plus stronger enforcement
-layers - are planned for later versions; they are not omitted by oversight.
+This version covers six clauses: five for the site, and a first clause for the agent itself,
+because data dignity is a two-sided property - sites are graded, agents can be certified.
+Stronger enforcement layers are planned for later versions; they are not omitted by oversight.
 
 ### 1 - Declared retention, verified, not trusted
 The site states what it retains from an agent interaction, for how long, and why. Verified by
@@ -91,6 +91,15 @@ names data classes, never the content itself - it must not become a second copy 
 sensitive thing it describes. This is the newest and most demanding clause, and the one we
 expect very few sites to support at first - which is exactly why it exists as its own graded
 line rather than a requirement.
+
+### 6 - The ledger (agent-side)
+The mirror of the receipt, and the first clause about the agent rather than the site: a
+dignity-respecting agent keeps its own ledger - every site it touched on a person's behalf,
+what was disclosed, when, and each interaction's deletion path. When a site is breached years
+later, one query answers "what did they have of mine," and every deletion path can be exercised
+at once. Tested by the same rule as everything else: the agent produces a complete, exportable
+ledger for a session, and its entries reconcile against the receipts of sites that issue them.
+Sites are graded on clauses 1 through 5; agents are certifiable on this one.
 
 ## Grading
 
