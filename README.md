@@ -98,16 +98,19 @@ Each clause is scored, not pass/fail - a site with real gaps still has a ladder 
 score can be re-checked over time as a site changes. Composite and per-clause grades are both
 reported, each labelled with its evidence level (declared, observed, or verified).
 
-The scoring rule is deterministic, so two independent checkers reach the same grade:
+The scoring rule is deterministic, so two independent checkers reach the same grade. The
+letters below are the v0.2 draft mapping, published for comment like everything else here:
 
-- A clause that is declared and independently verified grades highest.
-- A clause that is declared, with observed behavior consistent and nothing contradicting it,
-  grades in the middle.
-- A clause that is undeclared grades low - but above false.
-- A clause whose declaration is contradicted by evidence grades F, and caps the composite:
-  **a site caught in one false statement cannot outscore a site that stayed silent.**
-- An expired declaration (see `expires` in `SCHEMA.md`) is graded as stale: no clause it
-  covers can grade above the undeclared level until it is re-issued.
+- **A** - declared and independently verified.
+- **B** - declared, observed behavior consistent, nothing contradicting it.
+- **D** - undeclared. Low, but above false, on purpose.
+- **F** - declaration contradicted by evidence. An F on any clause also caps the composite
+  at F: **a site caught in one false statement cannot outscore a site that stayed silent.**
+- An expired declaration (see `expires` in `SCHEMA.md`) caps every clause it covers at
+  D - the undeclared level - until it is re-issued.
+
+The composite is the lowest of: the per-clause grades' mean (rounded down), and any cap
+above. Same inputs, same grade, whoever runs the check.
 
 **A Data Dignity grade is evidence of conformance to the defined tests. It is not proof that a
 site contains no undisclosed processing** - no external test can prove a negative about

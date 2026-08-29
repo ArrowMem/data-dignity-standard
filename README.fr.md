@@ -108,17 +108,21 @@ de même un échelon à gravir, et une note peut être révisée dans le temps �
 niveau de preuve (déclarée, observée ou vérifiée).
 
 La règle de notation est déterministe, pour que deux vérificateurs indépendants arrivent à la
-même note :
+même note. Les lettres ci-dessous sont la correspondance provisoire de la v0.2, publiée pour
+commentaires comme tout le reste ici :
 
-- Une clause déclarée et vérifiée de façon indépendante obtient la note la plus haute.
-- Une clause déclarée, dont le comportement observé est cohérent et que rien ne contredit,
-  obtient une note intermédiaire.
-- Une clause non déclarée obtient une note basse - mais au-dessus du faux.
-- Une clause dont la déclaration est contredite par la preuve obtient F, et plafonne la note
-  composite : **un site pris dans une seule fausse affirmation ne peut pas dépasser un site qui
-  s'est tu.**
-- Une déclaration expirée (voir `expires` dans `SCHEMA.md`) est évaluée comme périmée : aucune
-  clause qu'elle couvre ne peut dépasser le niveau non déclaré tant qu'elle n'est pas rééditée.
+- **A** - déclarée et vérifiée de façon indépendante.
+- **B** - déclarée, comportement observé cohérent, rien ne la contredit.
+- **D** - non déclarée. Basse, mais au-dessus du faux, à dessein.
+- **F** - déclaration contredite par la preuve. Un F sur une clause plafonne aussi la note
+  composite à F : **un site pris dans une seule fausse affirmation ne peut pas dépasser un site
+  qui s'est tu.**
+- Une déclaration expirée (voir `expires` dans `SCHEMA.md`) plafonne chaque clause qu'elle
+  couvre à D - le niveau non déclaré - tant qu'elle n'est pas rééditée.
+
+La note composite est la plus basse entre : la moyenne des notes par clause (arrondie vers le
+bas), et tout plafond ci-dessus. Mêmes intrants, même note, peu importe qui exécute la
+vérification.
 
 **Une note Data Dignity est la preuve d'une conformité aux tests définis. Ce n'est pas la
 preuve qu'un site ne contient aucun traitement non divulgué** - aucun test externe ne peut
