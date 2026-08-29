@@ -1,4 +1,4 @@
-# Le fichier de déclaration - format v0.4
+# Le fichier de déclaration - format v0.5
 
 *[English version](SCHEMA.md)*
 
@@ -47,7 +47,7 @@ est donc explicite :
   pour ensuite rapporter le résultat sur l'échelle actuelle.
 - Les formats plus anciens prennent leur retraite : une fois que le successeur d'une version a
   été publié pendant une période de commentaires définie, la version plus ancienne quitte
-  l'ensemble noté. L'ensemble noté actuel est exactement : **v0.4**.
+  l'ensemble noté. L'ensemble noté actuel est exactement : **v0.5**.
 
 ## Sérialisation stricte
 
@@ -83,7 +83,7 @@ de code ci-dessous reste en anglais, langue de travail du format lui-même - un 
 
 ```json
 {
-  "version": "0.4",
+  "version": "0.5",
   "declared": "2026-01-01T00:00:00Z",
   "expires": "2026-07-01T00:00:00Z",
   "last_reviewed": "2026-01-01T00:00:00Z",
@@ -323,7 +323,7 @@ l'agent n'a pas délibérément envoyées.
   `custom_classes`. Clés avec espace de noms (`"vendor.example/feature"`), contenu ignoré par
   les consommateurs qui ne le reconnaissent pas, jamais un endroit pour reformuler ou
   contredire un membre de base.
-- `signature` - réservé, et **les consommateurs v0.4 DOIVENT l'ignorer entièrement** :
+- `signature` - réservé, et **les consommateurs v0.5 DOIVENT l'ignorer entièrement** :
   aucun vérificateur, agent ou intermédiaire ne peut traiter sa présence comme la preuve de
   quoi que ce soit, parce qu'aucun profil interopérable n'existe encore et qu'une
   interprétation cryptographique maison livrée trop tôt est la façon dont commencent les
@@ -534,17 +534,18 @@ feuille de route) est la seule chose qui le fera jamais.
 - Le profil concret de signature et la construction concrète du jeton de suppression (voir
   ci-dessus) - tous deux définis comme points d'extension avec des exigences de liaison
   normatives, délibérément non profilés en attente d'une revue cryptographique indépendante.
-- Gestion des versions et migration. La v0.4 est un changement incompatible avec la grammaire
-  publiée de la v0.3 (les `legal_holds` bornés exigent désormais `purpose`, `legal_basis` et
-  `review_by`; `recipient`/`via` et `extensions` ont été ajoutés; la grammaire de base est
-  fermée) - et elle est versionnée plutôt que modifiée sur place, exactement ce que la
-  section de sécurité des versions ci-dessus exige de tous les autres. Les formats
-  antérieurs relèvent de ces mêmes règles : analysés, affichés, rapportés LEGACY, jamais
-  notés sur l'échelle actuelle.
+- Gestion des versions et migration. La v0.5 est un changement incompatible avec la
+  grammaire publiée de la v0.4 (`role` et `recipient` sont devenus obligatoires sur chaque
+  tiers, les noms de classes personnalisées entrant en collision avec les classes
+  normalisées sont rejetés, et les règles croisées de `via` sont devenues des règles de
+  schéma) - versionnée plutôt que modifiée sur place, exactement ce que la section de
+  sécurité des versions ci-dessus exige de tous les autres. Les formats antérieurs
+  relèvent de ces mêmes règles : analysés, affichés, rapportés LEGACY, jamais notés sur
+  l'échelle actuelle.
 
 ## Statut
 
-Ébauche v0.4, publiée pour commentaires en parallèle avec le document principal de la
+Ébauche v0.5, publiée pour commentaires en parallèle avec le document principal de la
 norme - et **gelée** : la grammaire et les invariants ci-dessus sont stables pour cette
 période de commentaires. Les commentaires sont triés, jamais intégrés à leur arrivée; les
 changements arrivent groupés dans la version suivante, et seuls un exploit démontré, une
