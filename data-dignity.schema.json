@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ArrowMem/data-dignity-standard/master/data-dignity.schema.json",
+  "title": "Data Dignity declaration",
+  "description": "Machine-validatable schema for /.well-known/data-dignity.json, format v0.2. Prose spec: SCHEMA.md.",
+  "type": "object",
+  "required": ["version", "declared", "expires", "retention", "third_parties", "jurisdiction", "deletion"],
+  "additionalProperties": true,
+  "properties": {
+    "version": { "type": "string", "enum": ["0.1", "0.2"] },
+    "declared": { "type": "string", "format": "date-time" },
+    "expires": { "type": "string", "format": "date-time" },
+    "last_reviewed": { "type": "string", "format": "date-time" },
+    "retention": {
+      "type": "object",
+      "required": ["content"],
+      "properties": {
+        "content": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "third_parties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "data_seen"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "role": {
+            "type": "string",
+            "enum": ["processor", "subprocessor", "infrastructure", "analytics", "security", "model_provider"]
+          },
+          "purpose": { "type": "string" },
+          "data_seen": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/dataClass" },
+            "minItems": 1
+          },
+          "jurisdiction": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "jurisdiction": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": ["processing", "storage"],
+          "properties": {
+            "processing": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "storage": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "backups": { "type": "array", "items": { "type": "string" } },
+            "legal": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "$comment": "v0.1 shape, accepted for backward compatibility; graded as the weaker v0.1 declaration."
+        }
+      ]
+    },
+    "deletion": {
+      "type": "object",
+      "required": ["handle", "method", "auth"],
+      "properties": {
+        "handle": { "type": "string", "pattern": "^https://" },
+        "method": { "type": "string", "enum": ["POST", "DELETE"] },
+        "auth": { "type": "string", "minLength": 1 },
+        "covers": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "legal_holds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["covers", "reason"],
+            "properties": {
+              "covers": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "receipt_support": { "type": "boolean" },
+    "signature": {
+      "type": "object",
+      "$comment": "Reserved extension point. Concrete profile intentionally unspecified pending independent cryptographic review; see SCHEMA.md."
+    }
+  },
+  "$defs": {
+    "dataClass": {
+      "type": "string",
+      "$comment": "The controlled vocabulary from SCHEMA.md. Site-specific additions are allowed, hence no closed enum, but checkers grade unrecognized classes as needing human review.",
+      "examples": [
+        "content", "identity", "authentication", "network_metadata",
+        "device_metadata", "financial", "health", "location", "files", "derived"
+      ]
+    }
+  }
+}
