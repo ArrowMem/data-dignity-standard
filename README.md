@@ -2,7 +2,7 @@
 
 *[Version française](README.fr.md)*
 
-**v0.2 - Draft for public comment**
+**v0.3 - Draft for public comment**
 
 ## Why this exists
 
@@ -59,18 +59,23 @@ because data dignity is a two-sided property - sites are graded, agents can be c
 Stronger enforcement layers are planned for later versions; they are not omitted by oversight.
 
 ### 1 - Declared retention, verified, not trusted
-The site states what it retains from an agent interaction, for how long, and why. Verified by
-submitting real test transactions carrying randomized synthetic data and checking for their
-reappearance - not by reading the declaration and taking it on faith. Tests are deliberately
-unmarked and indistinguishable from ordinary traffic, and a site must not special-case traffic
-it suspects is a test: passing by recognizing the auditor is graded as declared-and-false.
+The site states what it retains from an agent interaction, per data class, for how long, and
+why. Verified by submitting real test transactions carrying randomized synthetic data and
+checking for their reappearance - not by reading the declaration and taking it on faith. Tests
+are deliberately unmarked and indistinguishable from ordinary traffic, and a site must not
+special-case traffic it suspects is a test: passing by recognizing the auditor is graded as
+declared-and-false. One honest limit, stated rather than hidden: reappearance testing checks
+the words, not their shadows - a site can delete the text and keep an embedding, a score, a
+profile. That is why derived data is its own declared class with its own retention entry, and
+why a clean replay test is evidence about content, never about what was computed from it.
 
 ### 2 - No undisclosed third parties
-Every party that sees agent-delivered data is named - including processors and subprocessors a
-site forwards data to on the server side, where no outside observer can watch. Observed network
-traffic during a real agent interaction is checked against the declared list; what network
-observation cannot see is covered by the declaration itself, and a named party later found
-missing grades as declared-and-false.
+Every party that sees agent-delivered data is named - by a stable machine-readable identifier,
+not just a display name - including processors and subprocessors a site forwards data to on
+the server side, where no outside observer can watch. Observed network traffic during a real
+agent interaction is checked against the declared list; what network observation cannot see is
+covered by the declaration itself, and a party later found missing grades as
+declared-and-false.
 
 ### 3 - Jurisdiction, stated plainly
 Where the data is processed, stored and backed up is named in the declaration - as separate
@@ -80,9 +85,11 @@ after the fact.
 ### 4 - A working deletion path
 A real, machine-callable way to request deletion of what an interaction left behind - and
 plain honesty about anything a site is legally required to keep, and why. The deletion
-endpoint must authenticate that the caller is entitled to delete what it asks to delete, and
-must answer with what actually happened, not a bare acknowledgement. The format's rules for
-this are in `SCHEMA.md`.
+endpoint lives on the same origin as the declaration that advertises it - a deletion path
+pointing anywhere else is how a deletion credential leaks to an attacker, and it fails this
+clause outright. The endpoint must authenticate that the caller is entitled to delete what it
+asks to delete, and must answer with what actually happened, not a bare acknowledgement. The
+format's rules, including the request and response shapes, are in `SCHEMA.md`.
 
 ### 5 - The receipt
 Per interaction, a site can return a short receipt: what was received, what's retained and
@@ -96,10 +103,29 @@ line rather than a requirement.
 The mirror of the receipt, and the first clause about the agent rather than the site: a
 dignity-respecting agent keeps its own ledger - every site it touched on a person's behalf,
 what was disclosed, when, and each interaction's deletion path. When a site is breached years
-later, one query answers "what did they have of mine," and every deletion path can be exercised
-at once. Tested by the same rule as everything else: the agent produces a complete, exportable
-ledger for a session, and its entries reconcile against the receipts of sites that issue them.
-Sites are graded on clauses 1 through 5; agents are certifiable on this one.
+later, one query answers "what did they have of mine," and deletion can be requested wherever
+the person decides it should be.
+
+The ledger is the most sensitive database this standard creates, so its rules have teeth:
+
+- It records classes and metadata - site, origin, timestamp, interaction id, what classes were
+  disclosed - **never the disclosed content itself**, the same no-echo rule receipts follow.
+- **Audit records and live capabilities are stored apart.** Deletion tokens and any other
+  credential live in a protected capability store, encrypted at rest, never in a plain export
+  of the audit trail - so a leaked ledger export is a history, not a weapon.
+- The ledger belongs to the person: exportable by them, retained and deleted on their say,
+  never a hidden archive the agent keeps for itself.
+- **Bulk deletion is never autonomous.** Holding a token is means, not authorization: any
+  multi-site deletion run requires the person's explicit, informed go-ahead - preview what
+  will be asked of which origins and which classes, get the authorization, execute, report
+  per-origin results. An agent must never infer permission from the fact that the ledger
+  contains a token, whatever a prompt, plugin or automation says.
+
+Certification tests the same things it names: the agent produces a complete, exportable
+ledger for a session with nothing silently dropped, entries reconcile against the receipts of
+sites that issue them, capabilities sit outside the audit export, and bulk deletion refuses to
+run without explicit authorization. Sites are graded on clauses 1 through 5; agents are
+certifiable on this one.
 
 ## Grading
 
@@ -125,6 +151,17 @@ above. Same inputs, same grade, whoever runs the check.
 site contains no undisclosed processing** - no external test can prove a negative about
 someone else's infrastructure, and a grade that pretended otherwise would be the exact kind of
 false comfort this standard exists to end.
+
+## Limitations, stated plainly
+
+Until the reserved signature extension has a reviewed concrete profile, the trust model for
+the declaration file is HTTPS plus control of the origin - a compromised origin or
+misconfigured CDN can serve a false declaration, and an agent has no cryptographic way to
+detect it yet. Purely server-side behavior can be declared and graded, but never externally
+verified on its own - those claims stay at the declared evidence level until stronger
+mechanisms exist. And reappearance testing bounds what a site kept of the words, not what it
+computed from them. Every one of these limits is carried in the grades themselves rather than
+papered over: that is what the evidence labels are for.
 
 ## Status
 

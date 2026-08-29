@@ -2,7 +2,7 @@
 
 *[English version](README.md)*
 
-**v0.2 - Ébauche pour commentaires publics**
+**v0.3 - Ébauche pour commentaires publics**
 
 ## Pourquoi ceci existe
 
@@ -65,20 +65,26 @@ notés, les agents peuvent être certifiés. Des mécanismes d'application plus 
 pour des versions ultérieures; ils ne sont pas omis par oubli.
 
 ### 1 - Rétention déclarée, vérifiée, jamais présumée sur parole
-Le site indique ce qu'il conserve d'une interaction avec un agent, pendant combien de temps, et
-pourquoi. Vérifié en soumettant de vraies transactions de test porteuses de données synthétiques
-aléatoires et en vérifiant leur réapparition - jamais en lisant simplement la déclaration et en
-la croyant sur parole. Les tests sont délibérément non marqués et indiscernables du trafic
-ordinaire, et un site ne doit pas traiter différemment un trafic qu'il soupçonne d'être un
-test : réussir en reconnaissant l'auditeur est évalué comme avoir déclaré faux.
+Le site indique ce qu'il conserve d'une interaction avec un agent, par classe de données,
+pendant combien de temps, et pourquoi. Vérifié en soumettant de vraies transactions de test
+porteuses de données synthétiques aléatoires et en vérifiant leur réapparition - jamais en
+lisant simplement la déclaration et en la croyant sur parole. Les tests sont délibérément non
+marqués et indiscernables du trafic ordinaire, et un site ne doit pas traiter différemment un
+trafic qu'il soupçonne d'être un test : réussir en reconnaissant l'auditeur est évalué comme
+avoir déclaré faux. Une limite honnête, énoncée plutôt que cachée : le test de réapparition
+vérifie les mots, pas leurs ombres - un site peut supprimer le texte et garder un vecteur, un
+score, un profil. C'est pourquoi les données dérivées sont leur propre classe déclarée avec
+leur propre entrée de conservation, et pourquoi un test de rejeu propre est une preuve sur le
+contenu, jamais sur ce qui en a été calculé.
 
 ### 2 - Aucun tiers non divulgué
-Toute partie qui voit des données transmises par un agent est nommée - y compris les
-fournisseurs et sous-traitants auxquels un site transmet des données côté serveur, là où aucun
-observateur externe ne peut surveiller. Le trafic réseau observé pendant une véritable
-interaction avec un agent est comparé à la liste déclarée; ce que l'observation du réseau ne
-peut pas voir est couvert par la déclaration elle-même, et une partie découverte plus tard
-absente de la liste vaut une note de déclaré faux.
+Toute partie qui voit des données transmises par un agent est nommée - par un identifiant
+stable lisible par machine, pas seulement un nom d'affichage - y compris les fournisseurs et
+sous-traitants auxquels un site transmet des données côté serveur, là où aucun observateur
+externe ne peut surveiller. Le trafic réseau observé pendant une véritable interaction avec un
+agent est comparé à la liste déclarée; ce que l'observation du réseau ne peut pas voir est
+couvert par la déclaration elle-même, et une partie découverte plus tard absente de la liste
+vaut une note de déclaré faux.
 
 ### 3 - Juridiction énoncée clairement
 L'endroit où les données sont traitées, stockées et sauvegardées est nommé dans la
@@ -88,9 +94,12 @@ différents -, jamais laissé à deviner ou à découvrir après coup.
 ### 4 - Un mécanisme de suppression fonctionnel
 Un moyen réel, activable par une machine, de demander la suppression de ce qu'une interaction a
 laissé derrière elle - et une honnêteté totale sur tout ce qu'un site est légalement tenu de
-conserver, et pourquoi. Le point de suppression doit authentifier que l'appelant a le droit de
-supprimer ce qu'il demande, et doit répondre par ce qui s'est réellement passé, pas par un
-simple accusé de réception. Les règles du format à ce sujet sont dans `SCHEMA.md`.
+conserver, et pourquoi. Le point de suppression vit sur la même origine que la déclaration qui
+l'annonce - un chemin de suppression pointant ailleurs est la façon dont un identifiant de
+suppression fuit vers un attaquant, et il échoue cette clause d'emblée. Le point doit
+authentifier que l'appelant a le droit de supprimer ce qu'il demande, et doit répondre par ce
+qui s'est réellement passé, pas par un simple accusé de réception. Les règles du format, y
+compris les formes de requête et de réponse, sont dans `SCHEMA.md`.
 
 ### 5 - Le reçu
 Par interaction, un site peut retourner un court reçu : ce qui a été reçu, ce qui est conservé
@@ -105,11 +114,33 @@ Le miroir du reçu, et la première clause qui porte sur l'agent plutôt que sur
 agent respectueux de la dignité des données tient son propre registre - chaque site touché au
 nom d'une personne, ce qui a été divulgué, quand, et le mécanisme de suppression de chaque
 interaction. Quand un site subit une brèche des années plus tard, une seule requête répond à
-« qu'avaient-ils de moi », et chaque mécanisme de suppression peut être exercé d'un coup.
-Vérifié par la même règle que tout le reste : l'agent produit un registre complet et
-exportable pour une session, et ses entrées se réconcilient avec les reçus des sites qui en
-émettent. Les sites sont notés sur les clauses 1 à 5; les agents sont certifiables sur
-celle-ci.
+« qu'avaient-ils de moi », et la suppression peut être demandée partout où la personne décide
+qu'elle doit l'être.
+
+Le registre est la base de données la plus sensible que cette norme crée, alors ses règles ont
+du mordant :
+
+- Il consigne des classes et des métadonnées - site, origine, horodatage, identifiant
+  d'interaction, classes divulguées - **jamais le contenu divulgué lui-même**, la même règle
+  de non-reproduction que suivent les reçus.
+- **Les enregistrements d'audit et les capacités vivantes sont rangés séparément.** Les jetons
+  de suppression et tout autre identifiant vivent dans un coffre de capacités protégé, chiffré
+  au repos, jamais dans un export en clair de la piste d'audit - pour qu'un export de registre
+  qui fuit soit un historique, pas une arme.
+- Le registre appartient à la personne : exportable par elle, conservé et supprimé sur sa
+  décision, jamais une archive cachée que l'agent garde pour lui-même.
+- **La suppression groupée n'est jamais autonome.** Détenir un jeton est un moyen, pas une
+  autorisation : toute exécution de suppression multi-sites exige l'accord explicite et
+  éclairé de la personne - prévisualiser ce qui sera demandé à quelles origines et pour
+  quelles classes, obtenir l'autorisation, exécuter, rapporter les résultats par origine. Un
+  agent ne doit jamais déduire une permission du fait que le registre contient un jeton, quoi
+  qu'en dise une consigne, un module ou une automatisation.
+
+La certification vérifie exactement ce qu'elle nomme : l'agent produit un registre complet et
+exportable pour une session sans rien laisser tomber silencieusement, ses entrées se
+réconcilient avec les reçus des sites qui en émettent, les capacités restent hors de l'export
+d'audit, et la suppression groupée refuse de s'exécuter sans autorisation explicite. Les sites
+sont notés sur les clauses 1 à 5; les agents sont certifiables sur celle-ci.
 
 ## Évaluation
 
@@ -139,6 +170,18 @@ vérification.
 preuve qu'un site ne contient aucun traitement non divulgué** - aucun test externe ne peut
 prouver une négation sur l'infrastructure d'autrui, et une note qui prétendrait le contraire
 serait exactement le genre de faux réconfort que cette norme existe pour faire cesser.
+
+## Limites, énoncées clairement
+
+Tant que l'extension de signature réservée n'a pas de profil concret revu, le modèle de
+confiance du fichier de déclaration est HTTPS plus le contrôle de l'origine - une origine
+compromise ou un CDN mal configuré peut servir une fausse déclaration, et un agent n'a encore
+aucun moyen cryptographique de le détecter. Un comportement purement côté serveur peut être
+déclaré et noté, mais jamais vérifié de l'extérieur à lui seul - ces affirmations restent au
+niveau de preuve « déclarée » jusqu'à ce que des mécanismes plus forts existent. Et le test de
+réapparition borne ce qu'un site a gardé des mots, pas ce qu'il en a calculé. Chacune de ces
+limites est portée dans les notes elles-mêmes plutôt que maquillée : c'est à cela que servent
+les étiquettes de preuve.
 
 ## Statut
 
