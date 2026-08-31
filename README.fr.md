@@ -1,4 +1,4 @@
-# The Data Dignity Standard™
+# The Data Dignity Standard
 
 *[English version](README.md)*
 
@@ -25,6 +25,32 @@ les utilisent) puissent savoir quels sites traitent leurs données avec dignité
 gratuite et ouverte à tous; un service payant distinct et optionnel de suivi continu peut être
 offert aux organisations qui souhaitent que leur évaluation soit suivie dans le temps, mais rien
 dans le respect de la norme elle-même n'exige de payer qui que ce soit.
+
+## D'où vient cette idée
+
+Nous n'avons pas inventé l'expression « data dignity », et nous tenons à le dire clairement.
+
+Le terme vient de **Jaron Lanier et E. Glen Weyl**, qui l'ont exposé en 2018 dans « A Blueprint
+for a Better Digital Society » (Harvard Business Review). L'argument qui le sous-tend est plus
+ancien encore, et traverse l'ouvrage de Lanier « Who Owns the Future? » (2013) : les données
+qu'une personne produit sont sa contribution, et non une ressource gratuite; une économie
+numérique qui les traite comme gratuites prend quelque chose sans le dire. Weyl parlait de
+« data as labor »; Lanier, d'« humanistic digital economics ». Ils ont retenu « data dignity »
+parce que l'expression nommait la chose sans engager de querelle politique, et ce nom a survécu
+aux deux autres parce qu'il était le bon.
+
+D'autres ont poussé l'idée plus loin. RadicalxChange, la fondation de Weyl, a bâti une grande
+part de l'argumentaire public en sa faveur. Microsoft mène ses propres travaux sur la dignité
+des données. Cette idée a été développée par des personnes qui y réfléchissaient des années
+avant que les agents IA ne la rendent urgente, et elle leur appartient.
+
+**Ce que ce document ajoute est modeste.** La dignité des données a été, pendant l'essentiel de
+son existence, un principe : un énoncé sur ce qui devrait être. Ceci est une tentative d'en
+rendre une partie vérifiable par une machine, afin que le traitement des données d'une personne
+par un site puisse être testé plutôt qu'affirmé. C'est une contribution d'ingénierie à l'idée
+d'autrui, et non une idée nouvelle. Nous sommes reconnaissants que le terrain ait été préparé,
+et nous préférons le dire plutôt que de laisser un lecteur supposer que nous en sommes à
+l'origine.
 
 ## Principes
 
@@ -220,8 +246,6 @@ pour vérificateurs de `SCHEMA.md`.
 **Commentaires et questions :** ouvrez une issue sur ce dépôt, ou écrivez à git@arrowmem.ca
 
 **Licence :** ce document est sous licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.fr)
-- voir LICENSE. « Data Dignity Standard » est une marque de commerce d'ArrowMem (demande en
-instance); la marque de commerce est une question distincte de cette licence et n'est pas
-concédée par celle-ci.
+- voir LICENSE.
 
 L'équipe ArrowMem
