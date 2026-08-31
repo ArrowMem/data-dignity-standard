@@ -383,9 +383,7 @@ SCHEMA.md, SCHEMA.fr.md et autre documentation, dans les deux langues), droits d
 
 Comme l'indique l'Article 2(b) ci-dessus, le droit des brevets et le
 droit des marques ne sont pas concernés par la présente Licence
-publique. « Data Dignity Standard » est une marque de commerce
-d'ArrowMem (demande en cours) et constitue une question distincte, non
-accordée par la présente licence.
+publique.
 
 Ce document est une traduction officielle de Creative Commons du texte
 juridique anglais. En cas de divergence, la version anglaise (LICENSE)

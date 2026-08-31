@@ -1,4 +1,4 @@
-# The Data Dignity Standard™
+# The Data Dignity Standard
 
 *[Version française](README.fr.md)*
 
@@ -22,6 +22,29 @@ declaration format and a free way to check it, so agents (and the people using t
 which sites treat their data with respect. Grading is free and open to anyone; a separate,
 optional paid service for ongoing monitoring may be offered to organizations that want their
 grade tracked over time, but nothing about meeting the standard itself requires paying anyone.
+
+## Where this idea comes from
+
+We did not coin "data dignity", and we want to be plain about that.
+
+The term comes from **Jaron Lanier and E. Glen Weyl**, who set it out in 2018 in "A Blueprint
+for a Better Digital Society" (Harvard Business Review). The argument underneath it is older
+still, running through Lanier's "Who Owns the Future?" (2013): that the data a person generates
+is their contribution, not a free resource, and that a digital economy which treats it as free
+is taking something without saying so. Weyl had been calling it "data as labor"; Lanier,
+"humanistic digital economics". They chose "data dignity" because it named the thing without
+picking a political fight, and the name outlived both alternatives because it was the right one.
+
+Others have carried it further. RadicalxChange, Weyl's foundation, has built much of the public
+argument for it. Microsoft has its own Data Dignity work. The idea has been developed by people
+who were thinking about it years before AI agents made it urgent, and it is theirs.
+
+**What this document adds is narrow.** Data dignity has been, for most of its life, a
+principle: a statement about how things ought to be. This is an attempt to make one part of it
+checkable by a machine, so that a site's treatment of a person's data can be tested instead of
+asserted. That is an engineering contribution to somebody else's idea, not a new idea. We are
+grateful the groundwork was laid, and we would rather say so than let a reader assume we
+thought of it.
 
 ## Principles
 
@@ -197,7 +220,6 @@ checker is planned to follow shortly after the standard itself, built to the che
 **Feedback and questions:** open an issue on this repository, or email git@arrowmem.ca
 
 **License:** this document is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
-- see LICENSE. "Data Dignity Standard" is a trademark of ArrowMem (application pending); the
-trademark is a separate matter from this license and is not granted by it.
+- see LICENSE.
 
 The ArrowMem team
