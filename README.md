@@ -195,6 +195,30 @@ site contains no undisclosed processing** - no external test can prove a negativ
 someone else's infrastructure, and a grade that pretended otherwise would be the exact kind of
 false comfort this standard exists to end.
 
+## In-page agent tools (WebMCP) - informative
+
+This section is informative. It changes no clause, grammar or invariant of v0.5; it says how the
+existing clauses read when an agent calls a tool a page registers for it. WebMCP is a W3C Web
+Machine Learning Community Group draft, not a W3C Standard, and ships only behind browser
+origin trials, so expect it to change.
+
+- **A tool call is an interaction.** Clauses 1 to 5 apply to it exactly as they apply to the
+  page's own forms. A site that declares zero retention declares it for every path a tool can
+  reach; a tool that sends anything to the site's servers is held to the same declaration.
+- **The return value leaves the site.** Whatever a tool returns is read by the agent's model,
+  and the browser's agent and its model provider are not the site's processors. A site must
+  not claim that no one sees tool inputs or outputs; what the browser vendor keeps is outside
+  the site's control and outside clause 2.
+- **Consent is not bypassed.** A tool that submits, changes or deletes anything is marked as
+  consequential, so the browser asks the person before it runs, and it never skips a consent
+  or safety step the page's own interface would show.
+- **Untrusted content is labelled.** A tool that returns text the person or a third party
+  wrote marks it as untrusted content, and a tool takes only the narrow arguments it needs.
+  Tool descriptions and return values are prompt-injection surface, and are tested as such.
+- **The ledger includes tool calls.** A clause 6 agent records every tool call like any other
+  interaction. A browser-level confirmation the person performs counts as an out-of-context
+  act; a confirmation that exists only as text in the model's context does not.
+
 ## Limitations, stated plainly
 
 Until the reserved signature extension has a reviewed concrete profile, the trust model for

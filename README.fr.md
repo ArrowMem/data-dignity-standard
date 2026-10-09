@@ -220,6 +220,35 @@ preuve qu'un site ne contient aucun traitement non divulgué** - aucun test exte
 prouver une négation sur l'infrastructure d'autrui, et une note qui prétendrait le contraire
 serait exactement le genre de faux réconfort que cette norme existe pour faire cesser.
 
+## Outils d'agent intégrés à la page (WebMCP) - section informative
+
+Cette section est informative. Elle ne modifie aucune clause, grammaire ni invariant de la
+v0.5; elle précise comment les clauses existantes s'appliquent lorsqu'un agent appelle un outil
+qu'une page enregistre pour lui. WebMCP est une ébauche du groupe communautaire Web Machine
+Learning du W3C, et non une norme du W3C, et n'est offert que dans le cadre d'essais d'origine
+des navigateurs; il faut donc s'attendre à ce qu'il change.
+
+- **Un appel d'outil est une interaction.** Les clauses 1 à 5 s'y appliquent exactement comme
+  aux formulaires de la page. Un site qui déclare une conservation nulle la déclare pour tout
+  chemin qu'un outil peut atteindre; un outil qui envoie quoi que ce soit aux serveurs du site
+  est tenu à la même déclaration.
+- **La valeur de retour quitte le site.** Ce qu'un outil retourne est lu par le modèle de
+  l'agent, et l'agent du navigateur et son fournisseur de modèle ne sont pas des sous-traitants
+  du site. Un site ne doit pas affirmer que personne ne voit les entrées ou les sorties d'un
+  outil; ce que conserve le fournisseur du navigateur échappe au contrôle du site et à la clause 2.
+- **Le consentement n'est pas contourné.** Un outil qui soumet, modifie ou supprime quoi que ce
+  soit est marqué comme ayant des conséquences, afin que le navigateur demande à la personne
+  avant son exécution, et il ne saute jamais une étape de consentement ou de sécurité que
+  l'interface de la page afficherait.
+- **Le contenu non fiable est signalé.** Un outil qui retourne du texte rédigé par la personne
+  ou par un tiers le marque comme contenu non fiable, et un outil n'accepte que les arguments
+  restreints dont il a besoin. Les descriptions d'outils et les valeurs de retour sont une
+  surface d'injection de requêtes et sont testées comme telles.
+- **Le registre inclut les appels d'outils.** Un agent conforme à la clause 6 consigne chaque
+  appel d'outil comme toute autre interaction. Une confirmation que la personne effectue au
+  niveau du navigateur compte comme un acte accompli hors du contexte du modèle; une confirmation qui n'existe que
+  sous forme de texte dans le contexte du modèle ne compte pas.
+
 ## Limites, énoncées clairement
 
 Tant que l'extension de signature réservée n'a pas de profil concret revu, le modèle de
